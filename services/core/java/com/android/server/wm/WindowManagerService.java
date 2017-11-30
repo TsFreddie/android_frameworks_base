@@ -145,6 +145,7 @@ import com.android.server.Watchdog;
 import com.android.server.input.InputManagerService;
 import com.android.server.lights.Light;
 import com.android.server.lights.LightsManager;
+import com.android.server.policy.EssentialScreenPolicy;
 import com.android.server.policy.PhoneWindowManager;
 import com.android.server.power.ShutdownThread;
 
@@ -7687,6 +7688,10 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         // Update application display metrics.
+        LayoutParams layoutParams = new LayoutParams();
+        layoutParams.packageName = mAmInternal.getTopPackage();
+        final Rect displayFrameInsets = EssentialScreenPolicy.getDisplayFrameInsets(layoutParams, 1536, 0, mRotation);
+
         final int appWidth = mPolicy.getNonDecorDisplayWidth(dw, dh, mRotation, uiMode);
         final int appHeight = mPolicy.getNonDecorDisplayHeight(dw, dh, mRotation, uiMode);
         final DisplayInfo displayInfo = displayContent.getDisplayInfo();
@@ -7694,8 +7699,10 @@ public class WindowManagerService extends IWindowManager.Stub
         displayInfo.logicalWidth = dw;
         displayInfo.logicalHeight = dh;
         displayInfo.logicalDensityDpi = displayContent.mBaseDisplayDensity;
-        displayInfo.appWidth = appWidth;
-        displayInfo.appHeight = appHeight;
+        displayInfo.aspectCompatWidth = EssentialScreenPolicy.getAspectCompatWidth(dw, mRotation);
+        displayInfo.aspectCompatHeight = EssentialScreenPolicy.getAspectCompatHeight(dh, mRotation);
+        displayInfo.appWidth = appWidth - (displayFrameInsets.left + displayFrameInsets.right);
+        displayInfo.appHeight = appHeight - (displayFrameInsets.top + displayFrameInsets.bottom);
         displayInfo.getLogicalMetrics(mRealDisplayMetrics,
                 CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
         displayInfo.getAppMetrics(mDisplayMetrics);

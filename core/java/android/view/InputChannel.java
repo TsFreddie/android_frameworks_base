@@ -55,6 +55,7 @@ public final class InputChannel implements Parcelable {
     private native void nativeReadFromParcel(Parcel parcel);
     private native void nativeWriteToParcel(Parcel parcel);
     private native void nativeDup(InputChannel target);
+    private native void nativeSetOffset(float left, float top);
     
     private native String nativeGetName();
 
@@ -133,6 +134,10 @@ public final class InputChannel implements Parcelable {
         InputChannel target = new InputChannel();
         nativeDup(target);
         return target;
+    }
+
+    public void setOffset(float top, float left) {
+        nativeSetOffset(top, left);
     }
 
     @Override

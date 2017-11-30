@@ -22290,6 +22290,10 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
         }
 
+        public String getTopPackage() {
+            return ActivityManagerService.this.mStackSupervisor.getTopPackage();
+        }
+
         @Override
         public List<IBinder> getTopVisibleActivities() {
             synchronized (ActivityManagerService.this) {

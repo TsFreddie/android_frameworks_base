@@ -163,6 +163,7 @@ import com.android.internal.view.RotationPolicy;
 import com.android.internal.widget.PointerLocationView;
 import com.android.server.GestureLauncherService;
 import com.android.server.LocalServices;
+import com.android.server.policy.EssentialScreenPolicy;
 import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 import com.android.server.policy.keyguard.KeyguardServiceDelegate.DrawnListener;
 import com.android.server.statusbar.StatusBarManagerInternal;
@@ -455,7 +456,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     WindowState mKeyguardPanel;
 
-
     KeyguardServiceDelegate mKeyguardDelegate;
     final Runnable mWindowManagerDrawCallback = new Runnable() {
         @Override
@@ -476,7 +476,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     Handler mHandler;
     WindowState mLastInputMethodWindow = null;
     WindowState mLastInputMethodTargetWindow = null;
-
+    WindowState mLetterBoxBar = null;
     // FIXME This state is shared between the input reader and handler thread.
     // Technically it's broken and buggy but it has been like this for many years
     // and we have not yet seen any problems.  Someday we'll rewrite this logic
@@ -3171,6 +3171,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 return false;
             default:
                 // Hide only windows below the keyguard host window.
+                if (win == mLetterBoxBar) {
+                    return false;
+                }
+
                 return windowTypeToLayerLw(win.getBaseType())
                         < windowTypeToLayerLw(TYPE_STATUS_BAR);
         }
@@ -3378,6 +3382,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mContext.enforceCallingOrSelfPermission(
                         android.Manifest.permission.STATUS_BAR_SERVICE,
                         "PhoneWindowManager");
+                if (attrs == null || attrs.getTitle().equals("letterbox_package")) {
+                    break;
+                }
+                if (mLetterBoxBar != null && mLetterBoxBar.isAlive()) {
+                    return -7;
+                }
+                mLetterBoxBar = win;
                 break;
             case TYPE_KEYGUARD_PANEL:
                 mContext.enforceCallingOrSelfPermission(
@@ -6154,6 +6165,38 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             changes |= FINISH_LAYOUT_REDO_LAYOUT;
         }
 
+        if (mLetterBoxBar != null) {
+           Rect rect = null;
+           if (mWinShowWhenLocked != null) {
+               rect = EssentialScreenPolicy.getDisplayFrameInsets(mWinShowWhenLocked.getAttrs(),
+                          PolicyControl.getSystemUiVisibility(mWinShowWhenLocked, null), 
+                          PolicyControl.getWindowFlags(mWinShowWhenLocked, 
+                          mWinShowWhenLocked.getAttrs()), 
+                          mDisplayRotation);
+           } else {
+               if (!keyguardOn()) {
+                   if (mTopFullscreenOpaqueWindowState == null) {
+                       rect = EssentialScreenPolicy.getDisplayFrameInsets(null,0,0,mDisplayRotation);
+                   } else {
+                       if (!mTopFullscreenOpaqueWindowState.isInMultiWindowMode()) {
+                           rect = EssentialScreenPolicy.getDisplayFrameInsets(mTopFullscreenOpaqueWindowState.getAttrs(), 
+                               PolicyControl.getSystemUiVisibility(mTopFullscreenOpaqueWindowState, null), 
+                               PolicyControl.getWindowFlags(mTopFullscreenOpaqueWindowState, mTopFullscreenOpaqueWindowState.getAttrs()), 
+                               mDisplayRotation);
+                       }
+                   }
+               }
+           }
+
+           if (rect == null || (rect.left == 0 && rect.top == 0 && rect.right == 0 && rect.bottom == 0)) {
+               if (mLetterBoxBar.isVisibleLw()) {
+                   mLetterBoxBar.hideLw(false);
+               }
+           } else if (!mLetterBoxBar.isVisibleLw()) {
+               mLetterBoxBar.showLw(false);
+           }
+        }
+
         // update since mAllowLockscreenWhenOn might have changed
         updateLockScreenTimeout();
         return changes;
@@ -8659,6 +8702,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 // Otherwise if it's dimming, clear the light flag.
                 vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
             }
+        }
+
+        if (opaque != null) {
+            if ((vis & View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) != 0x0) {
+                Rect rect = EssentialScreenPolicy.getDisplayFrameInsets(opaque.getAttrs(), 
+                    PolicyControl.getSystemUiVisibility(opaque, null),
+                    PolicyControl.getWindowFlags(opaque, opaque.getAttrs()),
+                    mDisplayRotation);
+
+                if (rect != null && rect.top != 0) {
+                    vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                }
+             }
         }
         return vis;
     }

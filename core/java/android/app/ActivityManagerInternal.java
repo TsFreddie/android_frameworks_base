@@ -145,6 +145,11 @@ public abstract class ActivityManagerInternal {
     public abstract void notifyAppTransitionFinished();
 
     /**
+     * Returns the current focused activity package
+     */
+    public abstract String getTopPackage();
+
+    /**
      * Returns the top activity from each of the currently visible stacks. The first entry will be
      * the focused activity.
      */

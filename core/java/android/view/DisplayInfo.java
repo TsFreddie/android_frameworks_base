@@ -76,6 +76,19 @@ public final class DisplayInfo implements Parcelable {
     public int appHeight;
 
     /**
+     * The width of the portion of the display that is available to applications, in pixels.
+     * Represents the size of the display minus any system decorations.
+     */
+    public int aspectCompatWidth;
+
+    /**
+     * The height of the portion of the display that is available to applications, in pixels.
+     * Represents the size of the display minus any system decorations.
+     */
+    public int aspectCompatHeight;
+
+
+    /**
      * The smallest value of {@link #appWidth} that an application is likely to encounter,
      * in pixels, excepting cases where the width may be even smaller due to the presence
      * of a soft keyboard, for example.

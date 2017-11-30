@@ -37,6 +37,9 @@ import com.android.server.input.InputApplicationHandle;
 import com.android.server.input.InputManagerService;
 import com.android.server.input.InputWindowHandle;
 
+import com.android.server.policy.EssentialScreenPolicy;
+import com.android.server.policy.PolicyControl;
+
 import java.io.PrintWriter;
 import java.util.Arrays;
 
@@ -317,6 +320,14 @@ final class InputMonitor implements InputManagerService.WindowManagerCallbacks {
                 final int privateFlags = child.mAttrs.privateFlags;
                 final int type = child.mAttrs.type;
 
+                // Essential Window Policy addition
+                final Rect displayFrameInsets = EssentialScreenPolicy.getDisplayFrameInsets(child.mAttrs, 
+                    PolicyControl.getSystemUiVisibility(child, null), 
+                    PolicyControl.getWindowFlags(child, child.mAttrs), 
+                    mService.mRotation);
+                //inputChannel.setOffset(((float)-displayFrameInsets.left), ((float)-displayFrameInsets.top));
+                // End Essential Changes
+                
                 final boolean hasFocus = (child == mInputFocus);
                 final boolean isVisible = child.isVisibleLw();
                 if ((privateFlags

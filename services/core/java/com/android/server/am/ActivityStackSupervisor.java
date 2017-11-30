@@ -4566,6 +4566,16 @@ public final class ActivityStackSupervisor implements DisplayListener {
         return result;
     }
 
+    String getTopPackage() {
+        if (this.mFocusedStack != null) {
+            final ActivityRecord topActivity = mFocusedStack.topActivity();
+            if (topActivity != null) {
+                return topActivity.packageName;
+            }
+        }
+        return null;
+    }
+
     /**
      * @return a list of activities which are the top ones in each visible stack. The first
      * entry will be the focused activity.
