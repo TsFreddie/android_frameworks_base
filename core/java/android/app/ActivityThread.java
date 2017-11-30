@@ -2569,6 +2569,9 @@ public final class ActivityThread {
             component = new ComponentName(r.activityInfo.packageName,
                     r.activityInfo.targetActivity);
         }
+        
+        final DisplayManagerGlobal dm = DisplayManagerGlobal.getInstance();
+        dm.aspectRatioCompatMode = true;
 
         Activity activity = null;
         try {
@@ -3409,7 +3412,16 @@ public final class ActivityThread {
 
     public final ActivityClientRecord performResumeActivity(IBinder token,
             boolean clearHide, String reason) {
+        boolean aspectRatioCompatMode = true;
+        final DisplayManagerGlobal dm = DisplayManagerGlobal.getInstance();
+
         ActivityClientRecord r = mActivities.get(token);
+        if (r.activityInfo.resizeMode !=0)
+        {
+            aspectRatioCompatMode = false;
+        }
+        dm.aspectRatioCompatMode = aspectRatioCompatMode;
+
         if (localLOGV) Slog.v(TAG, "Performing resume of " + r
                 + " finished=" + r.activity.mFinished);
         if (r != null && !r.activity.mFinished) {

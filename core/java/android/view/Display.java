@@ -868,8 +868,13 @@ public final class Display {
     public void getRealMetrics(DisplayMetrics outMetrics) {
         synchronized (this) {
             updateDisplayInfoLocked();
-            mDisplayInfo.getLogicalMetrics(outMetrics,
-                    CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
+            if (mGlobal.aspectRatioCompatMode) {
+                mDisplayInfo.getAspectCompatMetrics(outMetrics,
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
+            } else {
+                mDisplayInfo.getLogicalMetrics(outMetrics,
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null);
+            }
         }
     }
 

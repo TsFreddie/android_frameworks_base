@@ -517,6 +517,11 @@ public final class DisplayInfo implements Parcelable {
         getMetricsWithSize(outMetrics, ci, configuration, appWidth, appHeight);
     }
 
+    public void getAspectCompatMetrics(final DisplayMetrics outMetrics, CompatibilityInfo ci,
+            Configuration configuration) {
+        getMetricsWithSize(outMetrics, ci, configuration, aspectCompatWidth, aspectCompatHeight);
+    }
+
     public void getLogicalMetrics(DisplayMetrics outMetrics, CompatibilityInfo compatInfo,
             Configuration configuration) {
         getMetricsWithSize(outMetrics, compatInfo, configuration, logicalWidth, logicalHeight);

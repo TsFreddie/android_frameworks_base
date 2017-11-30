@@ -75,9 +75,12 @@ public final class DisplayManagerGlobal {
     private int[] mDisplayIdCache;
 
     private int mWifiDisplayScanNestCount;
+    public boolean aspectRatioCompatMode;
 
     private DisplayManagerGlobal(IDisplayManager dm) {
         mDm = dm;
+        aspectRatioCompatMode = false;
+
     }
 
     /**
